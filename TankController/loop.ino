@@ -125,7 +125,7 @@ void loop() {
   int quest_start = millis();
   int time_diff = 0;
 
-switch (currentKey) {
+switch (state.charAt(0)) {
   case 'A':
     changePHSetPoint();
     break;
