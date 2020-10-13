@@ -50,12 +50,13 @@ void changePHSetPoint() {
       SavePhSet();
       delay(ONE_SECOND_DELAY_IN_MILLIS);
       Serial.println(F("New pH Set End"));
+    default:
       lcd.clear();
       lcd.print(F("pH="));
       lcd.setCursor(0, 1);  // Display position
       lcd.print(F("T="));   // display"Temp="
       wdt_enable(WDTO_8S);
-      state = "";
+      state.remove(0);
       break;
   }
 }
