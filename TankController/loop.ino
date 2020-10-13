@@ -1,130 +1,142 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// BEGIN LOOP//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+String state;
+double newph;
+
+void changePHSetPoint() {
+  key = state.charAt(state.length() - 1);
+  switch(state.length()) {
+    case 1:
+      wdt_disable();
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(F("New pH setpoint:"));
+      lcd.setCursor(0, 1);
+      lcd.print(F(" .   "));
+      Serial.println(F("Step 1"));
+      break;
+    case 2:
+      newph = key - '0';
+      lcd.setCursor(0, 1);
+      lcd.print(key);
+      Serial.print(F("Ones place: "));
+      Serial.println(key);
+      break;
+    case 3:
+      newph = ((key - '0') * 0.1) + newph;
+      lcd.setCursor(2, 1);
+      lcd.print(key);
+      Serial.print(F("Tenths place: "));
+      Serial.println(key);
+      break;
+    case 4:
+      newph = ((key - '0') * 0.01) + newph;
+      lcd.setCursor(3, 1);
+      lcd.print(key);
+      Serial.print(F("Hundreths place: "));
+      Serial.println(key);
+      break;
+    case 5:
+      newph = ((key - '0') * 0.001) + newph;
+      lcd.setCursor(4, 1);
+      lcd.print(key);
+      Serial.print(F("Thousanths place: "));
+      Serial.println(key);
+      lcd.setCursor(10, 1);
+      lcd.print(newph, 3);
+      ph_set = newph;
+      set_point = -1 * ph_set;
+      SavePhSet();
+      delay(ONE_SECOND_DELAY_IN_MILLIS);
+      Serial.println(F("New pH Set End"));
+      lcd.clear();
+      lcd.print(F("pH="));
+      lcd.setCursor(0, 1);  // Display position
+      lcd.print(F("T="));   // display"Temp="
+      wdt_enable(WDTO_8S);
+      state = "";
+      break;
+  }
+}
+
+/// Change Temperature set_point /////////////////////////////////////////////////////////////////////////////
+void changeTempSetPoint() {
+  wdt_disable();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("New Temp set:"));
+  lcd.setCursor(0, 1);
+  lcd.print(F("  .  "));
+  Serial.println(F("Step 1"));
+
+  key = custom_keypad.waitForKey();
+  double newtemp = (key - '0') * 10;
+  lcd.setCursor(0, 1);
+  lcd.print(key);
+  Serial.print(F("Tens place: "));
+  Serial.println(key);
+
+  key = custom_keypad.waitForKey();
+  newtemp = (key - '0') + newtemp;
+  lcd.setCursor(1, 1);
+  lcd.print(key);
+  Serial.print(F("Ones place: "));
+  Serial.println(key);
+
+  key = custom_keypad.waitForKey();
+  newtemp = ((key - '0') * 0.1) + newtemp;
+  lcd.setCursor(3, 1);
+  lcd.print(key);
+  Serial.print(F("Tenths place: "));
+  Serial.println(key);
+
+  key = custom_keypad.waitForKey();
+  newtemp = ((key - '0') * 0.01) + newtemp;
+  lcd.setCursor(4, 1);
+  lcd.print(key);
+  Serial.print(F("Hundreths place: "));
+  Serial.println(key);
+  lcd.setCursor(10, 1);
+  lcd.print(newtemp, 3);
+
+  temp_set = newtemp;
+  SaveTempSet();
+  delay(ONE_SECOND_DELAY_IN_MILLIS);
+  Serial.println(F("New Temp Set End"));
+
+  lcd.clear();
+  lcd.print(F("pH="));
+  lcd.setCursor(0, 1);  // Display position
+  lcd.print(F("T="));   // display"Temp="
+  wdt_enable(WDTO_8S);
+}
 
 void loop() {
   tank.loop();
   wdt_reset();
-  char to_start = custom_keypad.getKey();
-  if (to_start != NO_KEY) {
+  char currentKey = custom_keypad.getKey();
+  if (currentKey != NO_KEY) {
+    state += currentKey;
     Serial.print(F("To start key: "));
-    Serial.println(to_start);
+    Serial.println(currentKey);
   }
-  /// Change pH set_point ///////////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == 'A') {
-    wdt_disable();
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(F("New pH setpoint:"));
-    lcd.setCursor(0, 1);
-    lcd.print(F(" .   "));
-    Serial.println(F("Step 1"));
-
-    key = custom_keypad.waitForKey();
-    double newph = key - '0';
-    lcd.setCursor(0, 1);
-    lcd.print(key);
-    Serial.print(F("Ones place: "));
-    Serial.println(key);
-
-    key = custom_keypad.waitForKey();
-    newph = ((key - '0') * 0.1) + newph;
-    lcd.setCursor(2, 1);
-    lcd.print(key);
-    Serial.print(F("Tenths place: "));
-    Serial.println(key);
-
-    key = custom_keypad.waitForKey();
-    newph = ((key - '0') * 0.01) + newph;
-    lcd.setCursor(3, 1);
-    lcd.print(key);
-    Serial.print(F("Hundreths place: "));
-    Serial.println(key);
-
-    key = custom_keypad.waitForKey();
-    newph = ((key - '0') * 0.001) + newph;
-    lcd.setCursor(4, 1);
-    lcd.print(key);
-    Serial.print(F("Thousanths place: "));
-    Serial.println(key);
-    lcd.setCursor(10, 1);
-    lcd.print(newph, 3);
-
-    ph_set = newph;
-    set_point = -1 * ph_set;
-    SavePhSet();
-    delay(ONE_SECOND_DELAY_IN_MILLIS);
-    Serial.println(F("New pH Set End"));
-
-    lcd.clear();
-    lcd.print(F("pH="));
-    lcd.setCursor(0, 1);  // Display position
-    lcd.print(F("T="));   // display"Temp="
-    wdt_enable(WDTO_8S);
-  }
-
-  /// Change Temperature set_point /////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == 'B') {
-    wdt_disable();
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(F("New Temp set:"));
-    lcd.setCursor(0, 1);
-    lcd.print(F("  .  "));
-    Serial.println(F("Step 1"));
-
-    key = custom_keypad.waitForKey();
-    double newtemp = (key - '0') * 10;
-    lcd.setCursor(0, 1);
-    lcd.print(key);
-    Serial.print(F("Tens place: "));
-    Serial.println(key);
-
-    key = custom_keypad.waitForKey();
-    newtemp = (key - '0') + newtemp;
-    lcd.setCursor(1, 1);
-    lcd.print(key);
-    Serial.print(F("Ones place: "));
-    Serial.println(key);
-
-    key = custom_keypad.waitForKey();
-    newtemp = ((key - '0') * 0.1) + newtemp;
-    lcd.setCursor(3, 1);
-    lcd.print(key);
-    Serial.print(F("Tenths place: "));
-    Serial.println(key);
-
-    key = custom_keypad.waitForKey();
-    newtemp = ((key - '0') * 0.01) + newtemp;
-    lcd.setCursor(4, 1);
-    lcd.print(key);
-    Serial.print(F("Hundreths place: "));
-    Serial.println(key);
-    lcd.setCursor(10, 1);
-    lcd.print(newtemp, 3);
-
-    temp_set = newtemp;
-    SaveTempSet();
-    delay(ONE_SECOND_DELAY_IN_MILLIS);
-    Serial.println(F("New Temp Set End"));
-
-    lcd.clear();
-    lcd.print(F("pH="));
-    lcd.setCursor(0, 1);  // Display position
-    lcd.print(F("T="));   // display"Temp="
-    wdt_enable(WDTO_8S);
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
-  /// pH One-Point Calibration /////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
   int answer = 0;
   int quest_start = millis();
   int time_diff = 0;
 
-  if (to_start == 'C') {
+switch (currentKey) {
+  case 'A':
+    changePHSetPoint();
+    break;
+  case 'B':
+    changeTempSetPoint();
+    break;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// pH One-Point Calibration /////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  case 'C':
     wdt_disable();
     on_time = 0;
     lcd.clear();
@@ -149,13 +161,11 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /// Calibration Management //////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == 'D') {
+    break;
+  case 'D':
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Calibration Management //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     on_time = 0;
     lcd.clear();
@@ -194,11 +204,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// Change Tank ID /////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '#') {
+    break;
+  case '#':
+    /// Change Tank ID /////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -228,11 +236,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// Change Google Sheet Interval /////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '*') {
+    break;
+  case '*':
+    /// Change Google Sheet Interval /////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -269,11 +275,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// See Device Uptime & Current Time/////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '0') {
+    break;
+  case '0':
+    /// See Device Uptime & Current Time/////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     int start_time = millis();
     int now_time = millis();
@@ -314,11 +318,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// See Device addresses /////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '1') {
+    break;
+  case '1':
+    /// See Device addresses /////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     lcd.clear();
     lcd.print(F("Unit Information"));
@@ -364,21 +366,17 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// Reset LCD Screen /////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '2') {
+    break;
+  case '2':
+    /// Reset LCD Screen /////////////////////////////////////////////////////////////////////////////
     key = NO_KEY;
     lcd.clear();
     lcd.print(F("pH="));
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
-  }
-
-  /// See Tank ID and Log File Name/////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '3') {
+    break;
+  case '3':
+    /// See Tank ID and Log File Name/////////////////////////////////////////////////////////////////////////////
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(F("Tank ID: "));
@@ -393,11 +391,9 @@ void loop() {
     lcd.print(F("pH="));
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
-  }
-
-  /// See PID Constants/////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '4') {
+    break;
+  case '4':
+    /// See PID Constants/////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -418,11 +414,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// PID Tuning Menu/////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '5') {
+    break;
+  case '5':
+    /// PID Tuning Menu/////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     answer = 0;
     quest_start = millis();
@@ -481,11 +475,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-  /// End PID Tuning Menu/////////////////////////////////////////////////////////////////////////////
-
-  /// Temperature Calibration/////////////////////////////////////////////////////////////////////////////
-  if (to_start == '6') {
+    break;
+  case '6':
+    /// Temperature Calibration/////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     Serial.println(F("Temperature Calibration"));
     lcd.clear();
@@ -585,10 +577,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// Manual Set Time/////////////////////////////////////////////////////////////////////////////
-  if (to_start == '7') {
+    break;
+  case '7':
+    /// Manual Set Time/////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     ManualTime();
     lcd.clear();
@@ -596,10 +587,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// Enable PID/////////////////////////////////////////////////////////////////////////////
-  if (to_start == '8') {
+    break;
+  case '8':
+    /// Enable PID/////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     answer = 0;
     quest_start = millis();
@@ -633,11 +623,9 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
-
-  /// Set Chill or Heat /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  if (to_start == '9') {
+    break;
+  case '9':
+    /// Set Chill or Heat /////////////////////////////////////////////////////////////////////////////////////////////////////////
     wdt_disable();
     lcd.clear();
     lcd.print(F("Chill or Heat?"));
@@ -662,7 +650,8 @@ void loop() {
     lcd.setCursor(0, 1);  // Display position
     lcd.print(F("T="));   // display"Temp="
     wdt_enable(WDTO_8S);
-  }
+    break;
+}
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Main Running Loop /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

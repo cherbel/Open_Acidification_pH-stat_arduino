@@ -68,11 +68,11 @@ const unsigned long SEVEN_SECOND_DELAY_IN_MILLIS = 7 * SECOND_IN_MILLIS;
 
 unsigned long interval = 20 * MINUTE_IN_MILLIS;  // interval at which to update Google Sheets (milliseconds)
 unsigned long previous_millis =
-    0 - interval +
-    30 * SECOND_IN_MILLIS;  // will store last time Google Sheets was updated (-interval+30000 sets first upload for 30 seconds after startup. This eases troubleshooting)
+  0 - interval +
+  30 * SECOND_IN_MILLIS;  // will store last time Google Sheets was updated (-interval+30000 sets first upload for 30 seconds after startup. This eases troubleshooting)
 unsigned long chiller_previous_millis = 0;  // will store last time chiller state was checked
 const unsigned long CHILLER_INTERVAL =
-    30 * SECOND_IN_MILLIS;                 // interval at which to change chiller state                 // interval at which to start a new log file (formerly 1 day)
+  30 * SECOND_IN_MILLIS;                 // interval at which to change chiller state                 // interval at which to start a new log file (formerly 1 day)
 unsigned long sensor_previous_millis = 0;  // will store last time sensor readings were taken
 unsigned long sensor_interval;             // interval at which to start a new log file (milliseconds)
 unsigned long second_previous_millis = 0;
